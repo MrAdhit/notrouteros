@@ -1,0 +1,30 @@
+--- a/drivers/net/wireless/intel/iwlwifi/iwl-nvm-parse.c	2025-12-10 22:08:56.814064684 +0700
++++ b/drivers/net/wireless/intel/iwlwifi/iwl-nvm-parse.c	2025-12-10 22:09:33.729079619 +0700
+@@ -369,9 +369,13 @@
+ 		flags |= IEEE80211_CHAN_NO_IR;
+ 
+ #endif
++	
++#if 0
+ 
+ 	if (nvm_flags & NVM_CHANNEL_RADAR)
+ 		flags |= IEEE80211_CHAN_RADAR;
++	
++#endif
+ 
+ 	if (nvm_flags & NVM_CHANNEL_INDOOR_ONLY)
+ 		flags |= IEEE80211_CHAN_INDOOR_ONLY;
+@@ -1637,9 +1641,13 @@
+ 		flags |= NL80211_RRF_NO_IR;
+ 
+ #endif
++	
++#if 0
+ 
+ 	if (nvm_flags & NVM_CHANNEL_RADAR)
+ 		flags |= NL80211_RRF_DFS;
++	
++#endif
+ 
+ 	if (nvm_flags & NVM_CHANNEL_INDOOR_ONLY)
+ 		flags |= NL80211_RRF_NO_OUTDOOR;

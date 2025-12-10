@@ -1,0 +1,7 @@
+[NetDev]
+Name = wlan0ap
+Kind = wlan
+
+[WLAN]
+PhysicalDevice = phy0
+Type           = ap

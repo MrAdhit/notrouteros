@@ -1,0 +1,153 @@
+# Base system
+base
+linux
+linux-headers
+linux-firmware
+linux-firmware-marvell
+mkinitcpio
+mkinitcpio-archiso
+mkinitcpio-nfs-utils
+systemd-resolvconf
+
+# Microcode
+amd-ucode
+intel-ucode
+
+# Boot & firmware tools
+efibootmgr
+grub
+refind
+syslinux
+
+# Shells, editors & userland
+grml-zsh-config
+zsh
+neovim
+nano
+less
+mc
+tmux
+lynx
+man-db
+man-pages
+
+# Terminals, fonts & terminfo
+foot-terminfo
+kitty-terminfo
+rxvt-unicode-terminfo
+terminus-font
+
+# Filesystems
+bcachefs-tools
+btrfs-progs
+dosfstools
+e2fsprogs
+exfatprogs
+f2fs-tools
+fatresize
+jfsutils
+mtools
+nilfs-utils
+ntfs-3g
+squashfs-tools
+udftools
+xfsprogs
+
+# Disk management, imaging & recovery
+clonezilla
+ddrescue
+dmraid
+fsarchiver
+gpart
+gptfdisk
+hdparm
+lsscsi
+lvm2
+mdadm
+mmc-utils
+nbd
+nvme-cli
+open-iscsi
+partclone
+parted
+partimage
+pv
+sdparm
+sg3_utils
+smartmontools
+testdisk
+
+# Networking (wired & services)
+bind
+dnsmasq
+dhcpcd
+ethtool
+ldns
+linux-atm
+ndisc6
+nfs-utils
+nftables
+rsync
+tcpdump
+nmap
+darkhttpd
+xdg-utils
+networkmanager
+
+# VPN & remote access
+openssh
+openconnect
+openvpn
+ppp
+pptpclient
+vpnc
+wireguard-tools
+xl2tpd
+
+# Wireless
+iw
+wireless-regdb
+wireless_tools
+wpa_supplicant
+hostapd
+broadcom-wl
+b43-fwcutter
+
+# Modems & cellular
+modemmanager
+usb_modeswitch
+wvdial
+
+# Virtualization & guest tools
+qemu-guest-agent
+
+# Hardware enablement
+bolt
+libfido2
+libusb-compat
+dkms
+sof-firmware
+usbutils
+usbmuxd
+
+# Security & crypto
+cryptsetup
+openpgp-card-tools
+pcsclite
+sequoia-sq
+tpm2-tools
+tpm2-tss
+
+# Utilities & extras
+alsa-utils
+brltty
+diffutils
+dmidecode
+espeakup
+gpm
+lftp
+sudo
+
+# Patches
+iwlwifi-patch-dkms
+cfg80211-patch-dkms

@@ -1,0 +1,227 @@
+#!/usr/bin/env bash
+
+set -xe
+
+TARGET="/mnt"
+
+cleanup() {
+    local exit_code=$?
+    if [[ $exit_code -ne 0 ]]; then
+        echo "Installation failed, cleaning up..." >&2
+        umount -R ${TARGET} 2>/dev/null || true
+    fi
+    exit $exit_code
+}
+
+trap cleanup EXIT
+
+select_disk() {
+    lsblk
+    echo
+    read -p "Enter the disk to install to (e.g., /dev/sda): " DISK
+    
+    if [[ ! -b "$DISK" ]]; then
+        echo "Error: $DISK is not a valid block device"
+        exit 1
+    fi
+    
+    echo "WARNING: This will erase all data on $DISK"
+    read -p "Are you sure? (yes/no): " CONFIRM
+    
+    if [[ "$CONFIRM" != "yes" ]]; then
+        echo "Installation aborted" >&2
+        exit 0
+    fi
+}
+
+partition_disk() {
+    local part_prefix="$DISK"
+    
+    # NVMe drives use p1, p2 format (e.g., /dev/nvme0n1p1)
+    if [[ "$DISK" == *nvme* || "$DISK" == *mmcblk* ]]; then
+        part_prefix="${DISK}p"
+    fi
+    
+    echo "Partitioning $DISK..."
+    
+    if [[ -d /sys/firmware/efi ]]; then
+        echo "UEFI system detected - creating GPT partition table with ESP"
+        
+        parted -s "$DISK" mklabel gpt
+        parted -s "$DISK" mkpart primary fat32 1MiB 513MiB
+        parted -s "$DISK" set 1 esp on
+        parted -s "$DISK" mkpart primary ext4 513MiB 100%
+        
+        sleep 2
+        partprobe "$DISK"
+        sleep 1
+        
+        mkfs.fat -F32 "${part_prefix}1"
+        mkfs.ext4 -F "${part_prefix}2"
+        
+        mount "${part_prefix}2" ${TARGET}
+        mount --mkdir "${part_prefix}1" ${TARGET}/boot
+    else
+        echo "BIOS system detected - creating single partition"
+        
+        parted -s "$DISK" mklabel msdos
+        parted -s "$DISK" mkpart primary ext4 1MiB 100%
+        parted -s "$DISK" set 1 boot on
+        
+        sleep 2
+        partprobe "$DISK"
+        sleep 1
+        
+        mkfs.ext4 -F "${part_prefix}1"
+        
+        mount "${part_prefix}1" ${TARGET}
+    fi
+    
+    echo "Disk partitioned and mounted successfully"
+}
+
+install_packages() {
+    local packages_file="/usr/local/share/noros/packages"
+    
+    if [[ ! -f "$packages_file" ]]; then
+        echo "Error: Package list not found at $packages_file"
+        exit 1
+    fi
+    
+    echo "Reading package list from $packages_file..."
+    
+    local packages=$(grep -v '^#' "$packages_file" | grep -v '^$' | tr '\n' ' ')
+    
+    if [[ -z "$packages" ]]; then
+        echo "Error: No packages found in $packages_file"
+        exit 1
+    fi
+    
+    echo "Installing packages to ${TARGET}..."
+    echo "Packages: $packages"
+    echo
+    
+    # Use array to properly handle package names
+    local -a pkg_array
+    readarray -t pkg_array < <(grep -v '^#' "$packages_file" | grep -v '^$')
+    
+    # Make sure pacman-init is actually started
+    systemctl start pacman-init.service
+    pacstrap -K ${TARGET} "${pkg_array[@]}"
+    
+    echo "Packages installed successfully"
+}
+
+run_prepare_scripts() {
+    local package_dir="/usr/local/share/noros/package"
+    
+    if [[ ! -d "$package_dir" ]]; then
+        echo "Warning: Package scripts directory not found at $package_dir"
+        return
+    fi
+    
+    echo "Running prepare scripts..."
+    
+    for script in "$package_dir"/*.sh; do
+        if [[ -f "$script" ]]; then
+            echo "Sourcing $script for prepare phase..."
+            source "$script"
+            
+            if declare -f prepare > /dev/null; then
+                echo "Running prepare() from $(basename $script)..."
+                prepare
+                unset -f prepare
+            fi
+        fi
+    done
+    
+    echo "Prepare scripts completed"
+}
+
+run_package_scripts() {
+    local package_dir="/usr/local/share/noros/package"
+    
+    if [[ ! -d "$package_dir" ]]; then
+        echo "Warning: Package scripts directory not found at $package_dir"
+        return
+    fi
+    
+    echo "Running package scripts in chroot..."
+    
+    mkdir -p ${TARGET}/noros-install
+    cp -r "$package_dir"/*.sh ${TARGET}/noros-install/ 2>/dev/null || true
+    
+    cat > ${TARGET}/noros-install/run-package.sh << 'EOF'
+#!/usr/bin/bash
+set -e
+
+for script in /noros-install/*.sh; do
+    if [[ -f "$script" && "$script" != "/noros-install/run-package.sh" ]]; then
+        echo "Sourcing $script for package phase..."
+        source "$script"
+        
+        if declare -f package > /dev/null; then
+            echo "Running package() from $(basename $script)..."
+            package
+            unset -f package
+        fi
+    fi
+done
+
+echo "Package scripts completed"
+EOF
+    
+    chmod +x ${TARGET}/noros-install/run-package.sh
+    
+    arch-chroot ${TARGET} /noros-install/run-package.sh
+    
+    rm -rf ${TARGET}/noros-install
+}
+
+prompt_root_password() {
+    echo
+    echo "Set root password for the installed system"
+    
+    while true; do
+        read -sp "Enter root password: " ROOT_PASSWORD
+        echo
+        read -sp "Confirm root password: " ROOT_PASSWORD_CONFIRM
+        echo
+        
+        if [[ "$ROOT_PASSWORD" != "$ROOT_PASSWORD_CONFIRM" ]]; then
+            echo "Passwords do not match. Please try again." >&2
+            continue
+        fi
+        
+        if [[ -z "$ROOT_PASSWORD" ]]; then
+            echo "Password cannot be empty. Please try again." >&2
+            continue
+        fi
+        
+        break
+    done
+}
+
+set_root_password() {
+    echo "Setting root password..."
+    echo "root:${ROOT_PASSWORD}" | arch-chroot ${TARGET} chpasswd
+    echo "Root password set successfully"
+}
+
+select_disk
+prompt_root_password
+partition_disk
+install_packages
+run_prepare_scripts
+genfstab -U ${TARGET} >> ${TARGET}/etc/fstab
+set_root_password
+run_package_scripts
+
+arch-chroot ${TARGET} hostnamectl set-hostname NoROS
+
+echo "Installation complete!"
+
+echo "Now you are in the chrooted environment. You can perform additional configurations here."
+echo "Exit the chroot when done by typing 'exit' or pressing Ctrl+D."
+arch-chroot ${TARGET} /bin/zsh
+echo "Now reboot the system to boot into your new installation."

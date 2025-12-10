@@ -1,0 +1,6 @@
+NAME="NoROS"
+PRETTY_NAME="NotRouterOS"
+ID="noros"
+ID_LIKE="arch"
+BUILD_ID="alpha"
+ANSI_COLOR="38;2;23;147;209"

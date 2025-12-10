@@ -1,0 +1,13 @@
+build/
+
+patches/*/pkg/
+patches/*/src/
+patches/*/**/*.tar.xz
+patches/*/**/*.tar.zst
+patches/*/**/*.log
+patches/*/**/*.log.*
+patches/*.disabled/
+patches/repo/
+
+archlive/airootfs/usr/local/share/pacman-cache/*
+archlive/airootfs/usr/local/share/noros/repo/*

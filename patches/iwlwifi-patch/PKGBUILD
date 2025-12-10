@@ -1,0 +1,59 @@
+_srcname=iwlwifi-patch
+_kernver=$(pacman -Si linux | grep -oP 'Version.*:\K.*?(?=\.arch)' | xargs)
+_major=${_kernver%%.*}
+
+pkgname=${_srcname}-dkms
+
+pkgver=${_kernver}
+pkgrel=1
+arch=("any")
+
+pkgdesc="Intel wireless driver with LAR/regulatory patches for NotRouterOS"
+
+url="https://wireless.wiki.kernel.org/en/users/drivers/iwlwifi"
+license=("GPL2")
+
+depends=("dkms")
+
+source=(
+    "https://www.kernel.org/pub/linux/kernel/v${_major}.x/linux-${_kernver}.tar.xz"
+
+    "0001-revert-lar-disable.patch"
+    "0002-no-ir-remove.patch"
+    "0003-dfs-remove.patch"
+    
+    "dkms.conf"
+    "iwlwifi-dkms.conf"
+)
+md5sums=(
+    "512f1c964520792d9337f43b9177b181"
+
+    "a3698d3f6237e9102fa879dfd284a7a8"
+    "b1c468d3dc5ede52b7ba89997f80e671"
+    "659fcf2fb43f92cb9214b4351810365e"
+    
+    "730652a6fd46eaa97c001c01ea14dc91"
+    "788a7accf3c2e452b5c03b3c186c99ee"
+)
+
+options=(!strip)
+
+prepare() {
+    cd "$srcdir/linux-${_kernver}"
+
+    patch -p1 -i "$srcdir/0001-revert-lar-disable.patch"
+    patch -p1 -i "$srcdir/0002-no-ir-remove.patch"
+    patch -p1 -i "$srcdir/0003-dfs-remove.patch"
+}
+
+package() {
+    install -Dm644 dkms.conf "${pkgdir}/usr/src/${_srcname}-${pkgver}/dkms.conf"
+  
+    cp -rT "linux-${_kernver}/drivers/net/wireless/intel/iwlwifi" "${pkgdir}/usr/src/${_srcname}-${pkgver}"
+
+    sed -e "s/@PKGNAME@/${_srcname}/" \
+        -e "s/@PKGVER@/${pkgver}/" \
+        -i "${pkgdir}"/usr/src/${_srcname}-${pkgver}/dkms.conf
+
+    install -Dm644 "${srcdir}/iwlwifi-dkms.conf" "${pkgdir}/usr/lib/modprobe.d/iwlwifi-dkms.conf"
+}

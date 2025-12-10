@@ -1,0 +1,53 @@
+_srcname=cfg80211-patch
+_kernver=$(pacman -Si linux | grep -oP 'Version.*:\K.*?(?=\.arch)' | xargs)
+_major=${_kernver%%.*}
+
+pkgname=${_srcname}-dkms
+
+pkgver=${_kernver}
+pkgrel=1
+arch=("any")
+
+pkgdesc="cfg80211 wireless driver with radar detection disabled for NotRouterOS"
+
+url="https://wireless.wiki.kernel.org/en/developers/documentation/cfg80211"
+license=("GPL2")
+
+depends=("dkms")
+
+source=(
+    "https://www.kernel.org/pub/linux/kernel/v${_major}.x/linux-${_kernver}.tar.xz"
+
+    "0001-disable-radar-detection.patch"
+    
+    "dkms.conf"
+    "cfg80211-dkms.conf"
+)
+md5sums=(
+    "512f1c964520792d9337f43b9177b181"
+
+    "724ed47b2ee05d3b3e597be9807f14c2"
+    
+    "3983ae1f94949324ad775c20f788b388"
+    "59dc575f53d2c969fc769fb8a01a4b1e"
+)
+
+options=(!strip)
+
+prepare() {
+    cd "$srcdir/linux-${_kernver}"
+
+    patch -p1 -i "$srcdir/0001-disable-radar-detection.patch"
+}
+
+package() {
+    install -Dm644 dkms.conf "${pkgdir}/usr/src/${_srcname}-${pkgver}/dkms.conf"
+  
+    cp -rT "linux-6.17.9/net/wireless" "${pkgdir}/usr/src/${_srcname}-${pkgver}"
+
+    sed -e "s/@PKGNAME@/${_srcname}/" \
+        -e "s/@PKGVER@/${pkgver}/" \
+        -i "${pkgdir}"/usr/src/${_srcname}-${pkgver}/dkms.conf
+
+    install -Dm644 "${srcdir}/cfg80211-dkms.conf" "${pkgdir}/usr/lib/modprobe.d/cfg80211-dkms.conf"
+}

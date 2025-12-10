@@ -1,0 +1,17 @@
+[Match]
+Name = br-lan
+
+[Network]
+Address    = 192.168.10.1/24
+
+Address    = {{IPv6_ULA}}/48
+IPv6SendRA = true
+
+DHCPServer = true
+
+[DHCPServer]
+PoolOffset = 100
+PoolSize   = 100
+EmitDNS    = true
+# TODO: Change this to router own DNS after setting up DNS server
+DNS        = 1.1.1.1 
