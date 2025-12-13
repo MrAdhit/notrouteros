@@ -151,6 +151,7 @@ iperf3
 python
 curl
 wget
+speedtest-cli
 
 # Monitoring
 btop
