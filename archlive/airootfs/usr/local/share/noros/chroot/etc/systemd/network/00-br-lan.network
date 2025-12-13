@@ -13,4 +13,4 @@ DHCPServer = true
 PoolOffset = 100
 PoolSize   = 100
 EmitDNS    = true
-DNS        = 127.0.0.1
+DNS        = 192.168.10.1
