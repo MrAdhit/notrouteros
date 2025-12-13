@@ -1,0 +1,6 @@
+[Match]
+OriginalName = en*
+OriginalName = eth*
+
+[EnergyEfficientEthernet]
+Enable = false
