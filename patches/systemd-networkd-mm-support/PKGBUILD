@@ -109,4 +109,18 @@ if [[ -f /usr/lib/systemd/systemd-networkd-mm ]]; then
 fi
 EOF
     chmod 755 "${pkgdir}/usr/share/libalpm/scripts/systemd-networkd-mm-support"
+
+    # Install polkit rule to allow systemd-networkd to control ModemManager
+    install -d "${pkgdir}/usr/share/polkit-1/rules.d"
+    cat > "${pkgdir}/usr/share/polkit-1/rules.d/49-systemd-networkd-modemmanager.rules" << 'EOF'
+polkit.addRule(function(action, subject) {
+    if ((action.id == "org.freedesktop.ModemManager1.Device.Control" ||
+         action.id == "org.freedesktop.ModemManager1.Bearers" ||
+         action.id == "org.freedesktop.ModemManager1.Modem.Simple" ||
+         action.id.indexOf("org.freedesktop.ModemManager1") == 0) &&
+        subject.user == "systemd-network") {
+        return polkit.Result.YES;
+    }
+});
+EOF
 }
