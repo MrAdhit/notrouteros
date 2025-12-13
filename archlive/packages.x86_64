@@ -119,7 +119,6 @@ iwd
 wireless-regdb
 wireless_tools
 wpa_supplicant
-hostapd
 broadcom-wl
 b43-fwcutter
 
@@ -157,7 +156,17 @@ espeakup
 gpm
 lftp
 sudo
+curl
+wget
+
+# Monitoring
+btop
+htop
+iftop
+vnstat
 
 # Patches
 iwlwifi-patch-dkms
 cfg80211-patch-dkms
+systemd-networkd-mm-support
+hostapd-hs20

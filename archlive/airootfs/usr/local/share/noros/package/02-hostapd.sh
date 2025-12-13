@@ -7,15 +7,15 @@ prepare () {
         fi
     done)
 
-    HOSTAPD_CONF="$TARGET/etc/hostapd/hostapd.conf"
+    HOSTAPD_CONF="$TARGET/etc/hostapd/wlan0ap.conf"
 
     if [ -z "$WIFI_INTERFACE" ]; then
         rm -f "$HOSTAPD_CONF"
     else
-        sed -i "s/{{HOSTNAME}}/$(cat /etc/hostname)/g" "$HOSTAPD_CONF"
+        sed -i "s/{{HOSTNAME}}/$(cat $TARGET/etc/hostname)/g" "$HOSTAPD_CONF"
     fi
 }
 
 package () {
-    systemctl enable hostapd.service
+    systemctl enable hostapd@wlan0ap
 }

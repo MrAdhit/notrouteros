@@ -1,0 +1,16 @@
+post_install() {
+    /usr/share/libalpm/scripts/systemd-networkd-mm-support
+    echo "==> systemd-networkd has been replaced with ModemManager-enabled version"
+}
+
+post_upgrade() {
+    post_install
+}
+
+pre_remove() {
+    # Restore original if it exists
+    if [[ -f /usr/lib/systemd/systemd-networkd.orig ]]; then
+        mv /usr/lib/systemd/systemd-networkd.orig /usr/lib/systemd/systemd-networkd
+        echo "==> Original systemd-networkd restored"
+    fi
+}

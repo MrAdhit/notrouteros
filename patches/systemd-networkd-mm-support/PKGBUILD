@@ -1,0 +1,112 @@
+_srcname=systemd-networkd-mm-support
+_pr=38855
+
+pkgname=${_srcname}
+
+pkgver=257.pr38855.cd012b5
+pkgrel=1
+arch=("x86_64")
+
+pkgdesc="systemd-networkd with ModemManager support for NotRouterOS (PR #${_pr})"
+
+url="https://github.com/systemd/systemd/pull/${_pr}"
+license=("GPL2" "LGPL2.1")
+
+install=${pkgname}.install
+
+depends=(
+    "systemd"
+    "modemmanager"
+)
+makedepends=(
+    "git"
+    "meson"
+    "ninja"
+    "gperf"
+    "libcap"
+    "libgcrypt"
+    "libxcrypt"
+    "libidn2"
+    "util-linux"
+    "linux-api-headers"
+    "python-jinja"
+    "kmod"
+    "pcre2"
+    "libelf"
+    "libseccomp"
+)
+
+source=()
+sha256sums=()
+
+options=(!strip)
+
+prepare() {
+    cd "$srcdir"
+    
+    if [[ ! -d "${_srcname}" ]]; then
+        git clone --depth=1 https://github.com/systemd/systemd.git "${_srcname}"
+        cd "${_srcname}"
+        git fetch --depth=1 origin "pull/${_pr}/head:pr-${_pr}"
+        git checkout "pr-${_pr}"
+    fi
+}
+
+pkgver() {
+    cd "$srcdir/${_srcname}"
+    printf "%s.pr%s.%s" "$(cat version.h 2>/dev/null | grep -oP 'PACKAGE_VERSION "\K[^"]+' || echo '257')" "${_pr}" "$(git rev-parse --short HEAD)"
+}
+
+build() {
+    cd "$srcdir/${_srcname}"
+
+    meson setup build \
+        --prefix=/usr \
+        --libexecdir=lib \
+        --sbindir=bin \
+        --buildtype=plain \
+        --wrap-mode=nodownload \
+        -Dmode=release \
+        -Dnetworkd=true \
+        -Dlink-networkd-shared=false \
+        -Dstandalone-binaries=true \
+        -Dman=disabled \
+        -Dhtml=disabled \
+        -Dbootloader=disabled \
+        -Dbpf-framework=disabled \
+        -Dhomed=disabled \
+        -Dimportd=disabled \
+        -Dnspawn=disabled \
+        -Drepart=disabled \
+        -Dsysupdate=disabled \
+        -Dsysupdated=disabled \
+        -Dvmspawn=disabled \
+        -Dremote=disabled \
+        -Dfuzz-tests=false \
+        -Dtests=false \
+        -Dinstall-tests=false
+    
+    ninja -C build systemd-networkd
+}
+
+package() {
+    cd "$srcdir/${_srcname}"
+
+    # Install systemd-networkd binary with MM support to a different location
+    # The install script will replace the original during post_install
+    install -Dm755 build/systemd-networkd "${pkgdir}/usr/lib/systemd/systemd-networkd-mm"
+    
+    # Create install script directory
+    install -d "${pkgdir}/usr/share/libalpm/scripts"
+    
+    # Create the replacement script
+    cat > "${pkgdir}/usr/share/libalpm/scripts/systemd-networkd-mm-support" << 'EOF'
+#!/bin/bash
+# Replace systemd-networkd with the MM-patched version
+if [[ -f /usr/lib/systemd/systemd-networkd-mm ]]; then
+    mv /usr/lib/systemd/systemd-networkd /usr/lib/systemd/systemd-networkd.orig 2>/dev/null || true
+    mv /usr/lib/systemd/systemd-networkd-mm /usr/lib/systemd/systemd-networkd
+fi
+EOF
+    chmod 755 "${pkgdir}/usr/share/libalpm/scripts/systemd-networkd-mm-support"
+}

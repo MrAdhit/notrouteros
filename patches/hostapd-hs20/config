@@ -1,0 +1,111 @@
+# hostapd build configuration with Hotspot 2.0 / proxy_arp support
+# Based on Arch Linux hostapd config with additional features enabled
+
+# Driver interfaces
+CONFIG_DRIVER_HOSTAP=y
+CONFIG_DRIVER_WIRED=y
+CONFIG_DRIVER_NL80211=y
+
+# Use libnl 3.2
+CONFIG_LIBNL32=y
+
+# WPA2/IEEE 802.11i RSN pre-authentication
+CONFIG_RSN_PREAUTH=y
+
+# Operating Channel Validation
+CONFIG_OCV=y
+
+# Integrated EAP server
+CONFIG_EAP=y
+CONFIG_ERP=y
+CONFIG_EAP_MD5=y
+CONFIG_EAP_TLS=y
+CONFIG_EAP_MSCHAPV2=y
+CONFIG_EAP_PEAP=y
+CONFIG_EAP_GTC=y
+CONFIG_EAP_TTLS=y
+CONFIG_EAP_SIM=y
+CONFIG_EAP_AKA=y
+CONFIG_EAP_PAX=y
+CONFIG_EAP_PSK=y
+CONFIG_EAP_SAKE=y
+CONFIG_EAP_GPSK=y
+CONFIG_EAP_GPSK_SHA256=y
+
+# WPS
+CONFIG_WPS=y
+CONFIG_WPS_UPNP=y
+CONFIG_WPS_NFC=y
+
+# PKCS#12
+CONFIG_PKCS12=y
+
+# RADIUS
+CONFIG_RADIUS_SERVER=y
+CONFIG_IPV6=y
+CONFIG_RADIUS_TLS=y
+
+# 802.11r Fast BSS Transition
+CONFIG_IEEE80211R=y
+
+# Wireless Network Management (802.11v)
+# Required for BSS Transition Management
+CONFIG_WNM=y
+
+# 802.11ac/ax/be
+CONFIG_IEEE80211AC=y
+CONFIG_IEEE80211AX=y
+CONFIG_IEEE80211BE=y
+
+# WPA3
+CONFIG_SAE=y
+CONFIG_SAE_PK=y
+
+# Random
+CONFIG_GETRANDOM=y
+
+# Event loop
+CONFIG_ELOOP_EPOLL=y
+
+# SQLite for EAP-SIM/AKA
+CONFIG_SQLITE=y
+
+# ACS
+CONFIG_ACS=y
+
+# Airtime policy
+CONFIG_AIRTIME_POLICY=y
+
+# DPP (Wi-Fi Easy Connect)
+CONFIG_DPP=y
+CONFIG_DPP2=y
+
+# NAN USD
+CONFIG_NAN_USD=y
+
+# Mesh
+CONFIG_MESH=y
+CONFIG_WPS2=y
+
+##############################################################################
+# Features enabled for NotRouterOS (not in default Arch build)
+##############################################################################
+
+# Interworking (IEEE 802.11u)
+# Required for proxy_arp support
+CONFIG_INTERWORKING=y
+
+# Hotspot 2.0
+# Required for proxy_arp and advanced WiFi roaming features
+CONFIG_HS20=y
+
+# MBO (Multi-Band Operation)
+# Useful for steering clients between bands
+CONFIG_MBO=y
+
+# OWE (Opportunistic Wireless Encryption)
+CONFIG_OWE=y
+
+# FILS (Fast Initial Link Setup)
+CONFIG_FILS=y
+CONFIG_FILS_SK_PFS=y

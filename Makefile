@@ -2,14 +2,15 @@ DATE := $(shell date +%Y.%m.%d)
 ISO := build/notrouteros-$(DATE)-x86_64.iso
 CACHE_DIR := archlive/airootfs/usr/local/share/pacman-cache
 PACKAGES_FILE := archlive/packages.x86_64
+NOROS_PACKAGES_FILE := archlive/airootfs/usr/local/share/noros/packages
 
 .PHONY: all iso clean patches cache precache
 
-all: patches iso
+all: patches precache iso
 
 precache:
 	@mkdir -p $(CACHE_DIR)
-	sudo pacman -Syw --config archlive/pacman.conf --noconfirm $$(grep -v '^#' $(PACKAGES_FILE) | grep -v '^$$')
+	sudo pacman -Syw --config archlive/pacman.conf --noconfirm $$(grep -v '^#' $(PACKAGES_FILE) | grep -v '^$$') $$(grep -v '^#' $(NOROS_PACKAGES_FILE) | grep -v '^$$')
 
 cache:
 	@mkdir -p archlive/airootfs/usr/local/share/pacman-cache

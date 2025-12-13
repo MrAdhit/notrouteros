@@ -93,6 +93,7 @@ nmap
 darkhttpd
 xdg-utils
 networkmanager
+unbound
 
 # VPN & remote access
 openssh
@@ -109,7 +110,6 @@ iw
 wireless-regdb
 wireless_tools
 wpa_supplicant
-hostapd
 broadcom-wl
 b43-fwcutter
 
@@ -147,7 +147,19 @@ espeakup
 gpm
 lftp
 sudo
+iperf3
+python
+curl
+wget
+
+# Monitoring
+btop
+htop
+iftop
+vnstat
 
 # Patches
 iwlwifi-patch-dkms
 cfg80211-patch-dkms
+systemd-networkd-mm-support
+hostapd-hs20

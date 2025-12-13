@@ -29,7 +29,7 @@ md5sums=(
     "724ed47b2ee05d3b3e597be9807f14c2"
     
     "3983ae1f94949324ad775c20f788b388"
-    "59dc575f53d2c969fc769fb8a01a4b1e"
+    "45a4b7f969de1fec57d26840763646a8"
 )
 
 options=(!strip)
